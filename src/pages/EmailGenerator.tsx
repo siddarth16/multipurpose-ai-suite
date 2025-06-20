@@ -1,10 +1,37 @@
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { generateEmail } from "@/lib/groqClient";
 import { Mail, Building, User, Sparkles } from "lucide-react";
 
 const EmailGenerator = () => {
+  const [purpose, setPurpose] = useState("");
+  const [audience, setAudience] = useState("");
+  const [tone, setTone] = useState("");
+  const [details, setDetails] = useState("");
+  const [generated, setGenerated] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const prompt = `You are an expert email copywriter. Write a ${tone} email. Purpose: ${purpose}. Audience: ${audience}. Key points: ${details}.`;
+    setLoading(true);
+    try {
+      const email = await generateEmail(prompt);
+      setGenerated(email);
+    } catch (err) {
+      console.error(err);
+      setGenerated("Failed to generate email.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-ai-purple-900 via-ai-blue-900 to-ai-pink-900">
       <Navigation />
@@ -94,38 +121,78 @@ const EmailGenerator = () => {
             </Card>
           </div>
 
-          {/* Coming Soon Notice */}
+          {/* Email Form */}
           <div className="text-center">
             <Card className="glass border-white/20 backdrop-blur-xl animate-slide-up">
-              <CardContent className="p-12">
-                <div className="w-20 h-20 bg-gradient-to-br from-ai-purple-400 to-ai-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
-                  <Sparkles className="w-10 h-10 text-white" />
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Coming Soon!
-                </h2>
-                <p className="text-white/70 text-lg mb-8 max-w-2xl mx-auto">
-                  We're putting the finishing touches on this powerful email
-                  generation tool. It will include AI-powered personalization,
-                  tone adjustment, and direct sending capabilities.
-                </p>
-                <div className="flex flex-wrap justify-center gap-4 mb-8">
-                  <Badge className="bg-ai-purple-500/20 text-ai-purple-300 border-ai-purple-500/30 px-4 py-2">
-                    AI Personalization
-                  </Badge>
-                  <Badge className="bg-ai-blue-500/20 text-ai-blue-300 border-ai-blue-500/30 px-4 py-2">
-                    Tone Adjustment
-                  </Badge>
-                  <Badge className="bg-ai-pink-500/20 text-ai-pink-300 border-ai-pink-500/30 px-4 py-2">
-                    Direct Sending
-                  </Badge>
-                  <Badge className="bg-green-500/20 text-green-300 border-green-500/30 px-4 py-2">
-                    Performance Analytics
-                  </Badge>
-                </div>
-                <Button className="bg-gradient-to-r from-ai-purple-500 to-ai-blue-500 hover:from-ai-purple-400 hover:to-ai-blue-400 text-white px-8 py-3 rounded-xl font-semibold">
-                  Get Notified When Ready
-                </Button>
+              <CardHeader>
+                <CardTitle className="text-white text-2xl">Generate Email</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  <div className="space-y-2 text-left">
+                    <Label htmlFor="purpose" className="text-white/90">
+                      Purpose
+                    </Label>
+                    <Input
+                      id="purpose"
+                      value={purpose}
+                      onChange={(e) => setPurpose(e.target.value)}
+                      placeholder="e.g. Promote new product"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20 focus:border-ai-purple-400"
+                    />
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <Label htmlFor="audience" className="text-white/90">
+                      Audience
+                    </Label>
+                    <Input
+                      id="audience"
+                      value={audience}
+                      onChange={(e) => setAudience(e.target.value)}
+                      placeholder="Who will receive this email?"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20 focus:border-ai-purple-400"
+                    />
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <Label htmlFor="tone" className="text-white/90">
+                      Tone
+                    </Label>
+                    <Input
+                      id="tone"
+                      value={tone}
+                      onChange={(e) => setTone(e.target.value)}
+                      placeholder="e.g. Friendly, professional"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20 focus:border-ai-purple-400"
+                    />
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <Label htmlFor="details" className="text-white/90">
+                      Key Points
+                    </Label>
+                    <Textarea
+                      id="details"
+                      value={details}
+                      onChange={(e) => setDetails(e.target.value)}
+                      placeholder="Any additional details to include"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20 focus:border-ai-purple-400"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-gradient-to-r from-ai-purple-500 to-ai-blue-500 hover:from-ai-purple-400 hover:to-ai-blue-400 text-white px-8 py-3 rounded-xl font-semibold"
+                  >
+                    {loading ? "Generating..." : "Generate Email"}
+                  </Button>
+                </form>
+                {generated && (
+                  <div className="mt-8 text-left">
+                    <h3 className="text-white font-semibold mb-2">Preview</h3>
+                    <div className="whitespace-pre-wrap bg-white/10 text-white p-4 rounded-lg">
+                      {generated}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
