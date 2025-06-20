@@ -44,7 +44,7 @@ const Debugger = () => {
             Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "mixtral-8x7b-32768",
+            model: "llama3-70b-8192",
             messages: [
               {
                 role: "system",
