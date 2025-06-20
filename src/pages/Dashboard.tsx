@@ -1,6 +1,7 @@
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   Mail,
   FileText,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const stats = [
     {
       title: "Emails Generated",
@@ -210,15 +212,24 @@ const Dashboard = () => {
                   <CardTitle className="text-white">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button className="w-full bg-gradient-to-r from-ai-purple-500 to-ai-blue-500 hover:from-ai-purple-400 hover:to-ai-blue-400 text-white">
+                  <Button
+                    onClick={() => navigate("/tools/email-generator")}
+                    className="w-full bg-gradient-to-r from-ai-purple-500 to-ai-blue-500 hover:from-ai-purple-400 hover:to-ai-blue-400 text-white"
+                  >
                     <Mail className="w-4 h-4 mr-2" />
                     Generate Email
                   </Button>
-                  <Button className="w-full bg-gradient-to-r from-ai-blue-500 to-ai-pink-500 hover:from-ai-blue-400 hover:to-ai-pink-400 text-white">
+                  <Button
+                    onClick={() => navigate("/tools/resume")}
+                    className="w-full bg-gradient-to-r from-ai-blue-500 to-ai-pink-500 hover:from-ai-blue-400 hover:to-ai-pink-400 text-white"
+                  >
                     <FileText className="w-4 h-4 mr-2" />
                     Check Resume
                   </Button>
-                  <Button className="w-full bg-gradient-to-r from-ai-pink-500 to-ai-purple-500 hover:from-ai-pink-400 hover:to-ai-purple-400 text-white">
+                  <Button
+                    onClick={() => navigate("/tools/debugger")}
+                    className="w-full bg-gradient-to-r from-ai-pink-500 to-ai-purple-500 hover:from-ai-pink-400 hover:to-ai-purple-400 text-white"
+                  >
                     <Code className="w-4 h-4 mr-2" />
                     Debug Code
                   </Button>
