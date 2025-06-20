@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabaseClient";
 import {
   Sparkles,
   LayoutDashboard,
@@ -34,7 +35,8 @@ const Navigation = () => {
 
   const isToolsPage = location.pathname.startsWith("/tools");
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate("/");
   };
 
