@@ -11,8 +11,8 @@ import { Mail, Building, User, Sparkles } from "lucide-react";
 const EmailGenerator = () => {
   const [purpose, setPurpose] = useState<"business" | "job">("business");
   const [senderName, setSenderName] = useState("");
-  const [recipientName, setRecipientName] = useState("");
-  const [company, setCompany] = useState("");
+  const [fieldTwo, setFieldTwo] = useState("");
+  const [fieldThree, setFieldThree] = useState("");
   const [details, setDetails] = useState("");
   const [tone, setTone] = useState("Professional");
   const [result, setResult] = useState("");
@@ -41,7 +41,11 @@ const EmailGenerator = () => {
                 role: "user",
                 content: `Write a ${tone.toLowerCase()} cold email for ${
                   purpose === "business" ? "business promotion" : "job hunting"
-                }.\nSender: ${senderName}\nRecipient: ${recipientName}\nCompany: ${company}\nDetails: ${details}`,
+                }.\nSender: ${senderName}\n${
+                  purpose === "business"
+                    ? `Target Audience: ${fieldTwo}\nProduct/Business: ${fieldThree}`
+                    : `Your Role/Expertise: ${fieldTwo}\nTarget Role: ${fieldThree}`
+                }\nDetails: ${details}`,
               },
             ],
             temperature: 0.7,
@@ -164,29 +168,51 @@ const EmailGenerator = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label className="text-white/90">Your Name</Label>
+                  <Label className="text-white/90">
+                    {purpose === "business"
+                      ? "Your Name/Company Name"
+                      : "Your Name"}
+                  </Label>
                   <Input
-                    placeholder="e.g., Jane Doe"
+                    placeholder={
+                      purpose === "business"
+                        ? "Eg. John Doe or ABC Enterprises"
+                        : "Eg. John Doe"
+                    }
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
                     className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-ai-purple-400 focus:bg-white/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-white/90">Recipient Name</Label>
+                  <Label className="text-white/90">
+                    {purpose === "business"
+                      ? "Target Audience"
+                      : "Your Role/Expertise"}
+                  </Label>
                   <Input
-                    placeholder="e.g., John Smith"
-                    value={recipientName}
-                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder={
+                      purpose === "business"
+                        ? "Eg. Life Coaches or Distributors"
+                        : "Eg. Business Analyst or Python Expert"
+                    }
+                    value={fieldTwo}
+                    onChange={(e) => setFieldTwo(e.target.value)}
                     className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-ai-purple-400 focus:bg-white/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-white/90">Company / Role</Label>
+                  <Label className="text-white/90">
+                    {purpose === "business" ? "Product/Business" : "Target Role"}
+                  </Label>
                   <Input
-                    placeholder="Target company or role"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder={
+                      purpose === "business"
+                        ? "Explain about your product or business briefly"
+                        : "Explain the role you're targeting"
+                    }
+                    value={fieldThree}
+                    onChange={(e) => setFieldThree(e.target.value)}
                     className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-ai-purple-400 focus:bg-white/20"
                   />
                 </div>
@@ -194,21 +220,27 @@ const EmailGenerator = () => {
                   <Label className="text-white/90">Additional Details</Label>
                   <Textarea
                     rows={4}
-                    placeholder="Product highlights, achievements, etc."
+                    placeholder="Share details you want highlighted"
                     value={details}
                     onChange={(e) => setDetails(e.target.value)}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/50 focus:border-ai-purple-400 focus:outline-none resize-none"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-white/90">Tone</Label>
+                  <Label className="text-white/90">
+                    Tone (1. Professional 2. Smart 3. Casual 4. Persuasive 5.
+                    Formal)
+                  </Label>
                   <select
                     value={tone}
                     onChange={(e) => setTone(e.target.value)}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-ai-purple-400 focus:outline-none"
                   >
                     <option value="Professional">Professional</option>
-                    <option value="Friendly">Friendly</option>
+                    <option value="Smart">Smart</option>
+                    <option value="Casual">Casual</option>
+                    <option value="Persuasive">Persuasive</option>
+                    <option value="Formal">Formal</option>
                   </select>
                 </div>
                 <div className="text-center">
