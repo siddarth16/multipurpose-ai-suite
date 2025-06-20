@@ -13,18 +13,20 @@ This project is a web-based collection of AI utilities built with React, React R
    ```bash
    npm run dev
    ```
-
 3. **Type checking**
    ```bash
    npm run typecheck
    ```
+4. **Linting**
+   ```bash
+   npm run lint
+   ```
 
-4. **Run tests**
+5. **Run tests**
    ```bash
    npm test
    ```
-
-5. **Build for production**
+6. **Build for production**
    ```bash
    npm run build
    ```
@@ -45,4 +47,9 @@ VITE_GROQ_API_KEY=<your-groq-api-key>
 - Authentication pages for sign in and sign up
 - Tool selection and individual utilities
 - Protected routes backed by Supabase sessions
+
+## Continuous Integration
+
+This project includes a GitHub Actions workflow that automatically runs linting,
+type checking, tests, and a production build on each push or pull request.
 
