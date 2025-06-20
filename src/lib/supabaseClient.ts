@@ -1,3 +1,4 @@
+// src/lib/supabaseClient.ts
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://zthwutukjuswyjwhuiqf.supabase.co'
@@ -13,7 +14,7 @@ export type UserSignupData = {
   password: string
   phone: string
   country: string
-}"
+}
 
 // src/pages/auth/signup.tsx
 import { useState } from 'react'
@@ -62,12 +63,12 @@ export default function SignupPage() {
 
   return (
     <div className="flex flex-col gap-4 max-w-md mx-auto p-4">
-      <input name="first_name" onChange={handleChange} placeholder="First Name" className="input" />
-      <input name="last_name" onChange={handleChange} placeholder="Last Name" className="input" />
-      <input name="email" onChange={handleChange} placeholder="Email" className="input" />
-      <input name="password" type="password" onChange={handleChange} placeholder="Password" className="input" />
-      <input name="phone" onChange={handleChange} placeholder="Phone Number" className="input" />
-      <input name="country" onChange={handleChange} placeholder="Country" className="input" />
+      <input name="first_name" onChange={handleChange} value={formData.first_name} placeholder="First Name" className="input" />
+      <input name="last_name" onChange={handleChange} value={formData.last_name} placeholder="Last Name" className="input" />
+      <input name="email" onChange={handleChange} value={formData.email} placeholder="Email" className="input" />
+      <input name="password" type="password" onChange={handleChange} value={formData.password} placeholder="Password" className="input" />
+      <input name="phone" onChange={handleChange} value={formData.phone} placeholder="Phone Number" className="input" />
+      <input name="country" onChange={handleChange} value={formData.country} placeholder="Country" className="input" />
       {error && <p className="text-red-500">{error}</p>}
       <button onClick={handleSignup} className="btn">Create Account</button>
     </div>
