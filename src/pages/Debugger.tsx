@@ -1,7 +1,9 @@
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Code,
   Upload,
@@ -15,6 +17,58 @@ import {
 } from "lucide-react";
 
 const Debugger = () => {
+  const [code, setCode] = useState("");
+  const [language, setLanguage] = useState("");
+  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCode(reader.result as string);
+    reader.readAsText(file);
+  };
+
+  const handleRun = async () => {
+    if (!code) return;
+    setLoading(true);
+    setResult("");
+    try {
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "mixtral-8x7b-32768",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a senior engineer that finds bugs in code and suggests clear fixes.",
+              },
+              {
+                role: "user",
+                content: `Language: ${language || "auto"}\nCode:\n${code}`,
+              },
+            ],
+            temperature: 0.3,
+          }),
+        },
+      );
+      const data = await response.json();
+      setResult(data.choices?.[0]?.message?.content?.trim() || "No result");
+    } catch (_e) {
+      setResult("Failed to analyze code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-ai-purple-900 via-ai-blue-900 to-ai-pink-900">
       <Navigation />
@@ -62,7 +116,10 @@ const Debugger = () => {
                 <CardContent className="space-y-6">
                   {/* Code Input Methods */}
                   <div className="space-y-4">
-                    <div className="text-center p-8 border-2 border-dashed border-white/30 rounded-xl hover:border-ai-pink-400/50 transition-colors cursor-pointer">
+                    <label
+                      htmlFor="code-upload"
+                      className="text-center p-8 border-2 border-dashed border-white/30 rounded-xl hover:border-ai-pink-400/50 transition-colors cursor-pointer block"
+                    >
                       <Upload className="w-12 h-12 text-white/60 mx-auto mb-4" />
                       <h3 className="text-white font-semibold mb-2">
                         Upload Code File
@@ -70,7 +127,14 @@ const Debugger = () => {
                       <p className="text-white/70 text-sm">
                         Support for .txt, .js, .py, .java, .cpp and more
                       </p>
-                    </div>
+                      <input
+                        id="code-upload"
+                        type="file"
+                        accept=".txt,.js,.ts,.py,.java,.cpp,.c,.cs,.php,.rb,.go"
+                        onChange={handleFile}
+                        className="hidden"
+                      />
+                    </label>
 
                     <div className="text-center text-white/60">OR</div>
 
@@ -78,9 +142,11 @@ const Debugger = () => {
                       <label className="block text-white/90 font-medium">
                         Paste Your Code
                       </label>
-                      <textarea
+                      <Textarea
                         placeholder="Paste your code here..."
                         rows={12}
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/50 focus:border-ai-pink-400 focus:outline-none resize-none font-mono text-sm"
                       />
                     </div>
@@ -90,7 +156,11 @@ const Debugger = () => {
                     <label className="block text-white/90 font-medium">
                       Programming Language
                     </label>
-                    <select className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-ai-pink-400 focus:outline-none">
+                    <select
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-ai-pink-400 focus:outline-none"
+                    >
                       <option value="">Auto-detect</option>
                       <option value="javascript">JavaScript</option>
                       <option value="python">Python</option>
@@ -103,9 +173,13 @@ const Debugger = () => {
                     </select>
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-ai-pink-500 to-ai-purple-500 hover:from-ai-pink-400 hover:to-ai-purple-400 text-white py-3 rounded-xl font-semibold">
+                  <Button
+                    onClick={handleRun}
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-ai-pink-500 to-ai-purple-500 hover:from-ai-pink-400 hover:to-ai-purple-400 text-white py-3 rounded-xl font-semibold"
+                  >
                     <Search className="w-4 h-4 mr-2" />
-                    Run AI Bug Scan
+                    {loading ? "Scanning..." : "Run AI Bug Scan"}
                   </Button>
                 </CardContent>
               </Card>
@@ -193,6 +267,15 @@ const Debugger = () => {
                     <Download className="w-4 h-4 mr-2" />
                     Download Report (Word)
                   </Button>
+
+                  {result && (
+                    <Textarea
+                      readOnly
+                      rows={10}
+                      value={result}
+                      className="mt-6 w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-ai-pink-400 focus:outline-none resize-none font-mono text-sm"
+                    />
+                  )}
                 </CardContent>
               </Card>
             </div>
