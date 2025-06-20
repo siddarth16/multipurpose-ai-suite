@@ -36,6 +36,7 @@ Create a `.env` file based on `.env.example` and provide your Supabase credentia
 ```
 VITE_SUPABASE_URL=<your-supabase-url>
 VITE_SUPABASE_ANON_KEY=<your-anon-key>
+VITE_GROQ_API_KEY=<your-groq-api-key>
 ```
 
 ## Features
