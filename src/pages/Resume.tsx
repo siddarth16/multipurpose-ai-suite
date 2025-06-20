@@ -1,7 +1,11 @@
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileText,
@@ -14,6 +18,112 @@ import {
 } from "lucide-react";
 
 const Resume = () => {
+  const [checkerResume, setCheckerResume] = useState("");
+  const [checkerRole, setCheckerRole] = useState("");
+  const [checkerResult, setCheckerResult] = useState("");
+  const [checkerLoading, setCheckerLoading] = useState(false);
+
+  const [optResume, setOptResume] = useState("");
+  const [optRole, setOptRole] = useState("");
+  const [optHighlights, setOptHighlights] = useState("");
+  const [optStyle, setOptStyle] = useState("objective");
+  const [optResult, setOptResult] = useState("");
+  const [optLoading, setOptLoading] = useState(false);
+
+  const handleCheckerFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCheckerResume(reader.result as string);
+    reader.readAsText(file);
+  };
+
+  const handleOptFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setOptResume(reader.result as string);
+    reader.readAsText(file);
+  };
+
+  const handleAnalyze = async () => {
+    setCheckerLoading(true);
+    setCheckerResult("");
+    try {
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "mixtral-8x7b-32768",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You score resumes for ATS. Provide a score out of 100 with a short explanation.",
+              },
+              {
+                role: "user",
+                content: `Resume:\n${checkerResume}\nTarget Role: ${checkerRole}`,
+              },
+            ],
+            temperature: 0.3,
+          }),
+        },
+      );
+      const data = await response.json();
+      setCheckerResult(
+        data.choices?.[0]?.message?.content?.trim() || "No result",
+      );
+    } catch (_e) {
+      setCheckerResult("Failed to analyze resume");
+    } finally {
+      setCheckerLoading(false);
+    }
+  };
+
+  const handleOptimize = async () => {
+    setOptLoading(true);
+    setOptResult("");
+    try {
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "mixtral-8x7b-32768",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You optimize resumes for a target job and ATS. Respond with the improved resume text only.",
+              },
+              {
+                role: "user",
+                content: `Resume:\n${optResume}\nTarget Role: ${optRole}\nHighlights: ${optHighlights}\nStyle: ${optStyle}`,
+              },
+            ],
+            temperature: 0.3,
+          }),
+        },
+      );
+      const data = await response.json();
+      setOptResult(data.choices?.[0]?.message?.content?.trim() || "No result");
+    } catch (_e) {
+      setOptResult("Failed to optimize resume");
+    } finally {
+      setOptLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-ai-purple-900 via-ai-blue-900 to-ai-pink-900">
       <Navigation />
@@ -79,7 +189,10 @@ const Resume = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {/* Upload Section */}
                       <div className="space-y-6">
-                        <div className="text-center p-8 border-2 border-dashed border-white/30 rounded-xl hover:border-ai-blue-400/50 transition-colors cursor-pointer">
+                        <label
+                          htmlFor="checker-upload"
+                          className="block text-center p-8 border-2 border-dashed border-white/30 rounded-xl hover:border-ai-blue-400/50 transition-colors cursor-pointer"
+                        >
                           <Upload className="w-12 h-12 text-white/60 mx-auto mb-4" />
                           <h3 className="text-white font-semibold mb-2">
                             Upload Your Resume
@@ -87,18 +200,32 @@ const Resume = () => {
                           <p className="text-white/70 text-sm">
                             Supports PDF and DOC formats
                           </p>
-                        </div>
+                          <input
+                            id="checker-upload"
+                            type="file"
+                            accept=".txt,.md,.pdf,.doc,.docx"
+                            onChange={handleCheckerFile}
+                            className="hidden"
+                          />
+                        </label>
 
                         <div className="space-y-4">
-                          <label className="block text-white/90 font-medium">
-                            Target Role
-                          </label>
-                          <input
-                            type="text"
+                          <Label className="text-white/90">Target Role</Label>
+                          <Input
+                            value={checkerRole}
+                            onChange={(e) => setCheckerRole(e.target.value)}
                             placeholder="e.g., Software Engineer, Marketing Manager"
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/50 focus:border-ai-blue-400 focus:outline-none"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-ai-blue-400"
                           />
                         </div>
+                        {checkerResume && (
+                          <Textarea
+                            readOnly
+                            rows={6}
+                            value={checkerResume}
+                            className="bg-white/5 border-white/20 text-white"
+                          />
+                        )}
                       </div>
 
                       {/* Features Preview */}
@@ -148,10 +275,22 @@ const Resume = () => {
                       </div>
                     </div>
 
-                    <div className="text-center">
-                      <Button className="bg-gradient-to-r from-ai-blue-500 to-ai-pink-500 hover:from-ai-blue-400 hover:to-ai-pink-400 text-white px-8 py-3 rounded-xl font-semibold">
-                        Analyze Resume
+                    <div className="text-center space-y-4">
+                      <Button
+                        onClick={handleAnalyze}
+                        disabled={checkerLoading}
+                        className="bg-gradient-to-r from-ai-blue-500 to-ai-pink-500 hover:from-ai-blue-400 hover:to-ai-pink-400 text-white px-8 py-3 rounded-xl font-semibold"
+                      >
+                        {checkerLoading ? "Analyzing..." : "Analyze Resume"}
                       </Button>
+                      {checkerResult && (
+                        <Textarea
+                          readOnly
+                          rows={6}
+                          value={checkerResult}
+                          className="bg-white/10 border border-white/20 text-white"
+                        />
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -169,7 +308,10 @@ const Resume = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {/* Input Section */}
                       <div className="space-y-6">
-                        <div className="text-center p-8 border-2 border-dashed border-white/30 rounded-xl hover:border-ai-pink-400/50 transition-colors cursor-pointer">
+                        <label
+                          htmlFor="optimizer-upload"
+                          className="block text-center p-8 border-2 border-dashed border-white/30 rounded-xl hover:border-ai-pink-400/50 transition-colors cursor-pointer"
+                        >
                           <Upload className="w-12 h-12 text-white/60 mx-auto mb-4" />
                           <h3 className="text-white font-semibold mb-2">
                             Upload Current Resume
@@ -177,29 +319,45 @@ const Resume = () => {
                           <p className="text-white/70 text-sm">
                             We'll optimize it for your target role
                           </p>
-                        </div>
+                          <input
+                            id="optimizer-upload"
+                            type="file"
+                            accept=".txt,.md,.pdf,.doc,.docx"
+                            onChange={handleOptFile}
+                            className="hidden"
+                          />
+                        </label>
 
                         <div className="space-y-4">
-                          <label className="block text-white/90 font-medium">
-                            Target Role
-                          </label>
-                          <input
-                            type="text"
+                          <Label className="text-white/90">Target Role</Label>
+                          <Input
+                            value={optRole}
+                            onChange={(e) => setOptRole(e.target.value)}
                             placeholder="e.g., Senior Software Engineer"
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/50 focus:border-ai-pink-400 focus:outline-none"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-ai-pink-400"
                           />
                         </div>
 
                         <div className="space-y-4">
-                          <label className="block text-white/90 font-medium">
+                          <Label className="text-white/90">
                             Specific Highlights
-                          </label>
-                          <textarea
+                          </Label>
+                          <Textarea
+                            value={optHighlights}
+                            onChange={(e) => setOptHighlights(e.target.value)}
                             placeholder="Key achievements or skills to emphasize..."
                             rows={4}
                             className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/50 focus:border-ai-pink-400 focus:outline-none resize-none"
                           />
                         </div>
+                        {optResume && (
+                          <Textarea
+                            readOnly
+                            rows={6}
+                            value={optResume}
+                            className="bg-white/5 border-white/20 text-white"
+                          />
+                        )}
                       </div>
 
                       {/* Optimization Options */}
@@ -228,12 +386,15 @@ const Resume = () => {
                             <div
                               key={index}
                               className="p-4 bg-white/5 rounded-lg border border-white/10 hover:border-ai-pink-400/30 transition-colors cursor-pointer"
+                              onClick={() => setOptStyle(tone.value)}
                             >
                               <div className="flex items-center space-x-3">
                                 <input
                                   type="radio"
                                   name="tone"
                                   value={tone.value}
+                                  checked={optStyle === tone.value}
+                                  onChange={() => setOptStyle(tone.value)}
                                   className="text-ai-pink-500"
                                 />
                                 <div>
@@ -251,10 +412,24 @@ const Resume = () => {
                       </div>
                     </div>
 
-                    <div className="text-center">
-                      <Button className="bg-gradient-to-r from-ai-pink-500 to-ai-purple-500 hover:from-ai-pink-400 hover:to-ai-purple-400 text-white px-8 py-3 rounded-xl font-semibold">
-                        Generate Optimized Resume
+                    <div className="text-center space-y-4">
+                      <Button
+                        onClick={handleOptimize}
+                        disabled={optLoading}
+                        className="bg-gradient-to-r from-ai-pink-500 to-ai-purple-500 hover:from-ai-pink-400 hover:to-ai-purple-400 text-white px-8 py-3 rounded-xl font-semibold"
+                      >
+                        {optLoading
+                          ? "Generating..."
+                          : "Generate Optimized Resume"}
                       </Button>
+                      {optResult && (
+                        <Textarea
+                          readOnly
+                          rows={8}
+                          value={optResult}
+                          className="bg-white/10 border border-white/20 text-white"
+                        />
+                      )}
                     </div>
                   </CardContent>
                 </Card>
