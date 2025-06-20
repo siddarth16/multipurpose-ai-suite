@@ -60,7 +60,15 @@ const Auth = () => {
     if (error) {
       toast({ title: error.message });
     } else {
-      navigate("/dashboard");
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: signUpEmail,
+        password: signUpPassword,
+      });
+      if (signInError) {
+        toast({ title: signInError.message });
+      } else {
+        navigate("/dashboard");
+      }
     }
   };
 
