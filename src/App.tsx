@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { AuthProvider } from "@/hooks/useAuth";
 import Greeting from "./pages/Greeting";
 import Auth from "./pages/Auth";
 import Tools from "./pages/Tools";
@@ -20,16 +22,53 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Greeting />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/tools" element={<Tools />} />
-          <Route path="/tools/email-generator" element={<EmailGenerator />} />
-          <Route path="/tools/resume" element={<Resume />} />
-          <Route path="/tools/debugger" element={<Debugger />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Greeting />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route
+              path="/tools"
+              element={
+                <ProtectedRoute>
+                  <Tools />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tools/email-generator"
+              element={
+                <ProtectedRoute>
+                  <EmailGenerator />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tools/resume"
+              element={
+                <ProtectedRoute>
+                  <Resume />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tools/debugger"
+              element={
+                <ProtectedRoute>
+                  <Debugger />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

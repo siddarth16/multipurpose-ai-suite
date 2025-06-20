@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +28,41 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [signinEmail, setSigninEmail] = useState("");
+  const [signinPassword, setSigninPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+
+  const handleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: signinEmail,
+      password: signinPassword,
+    });
+    if (error) {
+      toast({ title: error.message });
+    } else {
+      navigate("/dashboard");
+    }
+  };
+
+  const handleSignUp = async () => {
+    const { error } = await supabase.auth.signUp({
+      email: signUpEmail,
+      password: signUpPassword,
+      options: {
+        data: { firstName, lastName, phone, country },
+      },
+    });
+    if (error) {
+      toast({ title: error.message });
+    } else {
+      navigate("/dashboard");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ai-purple-900 via-ai-blue-900 to-ai-pink-900 relative overflow-hidden">
@@ -79,6 +116,8 @@ const Auth = () => {
                           id="signin-email"
                           type="email"
                           placeholder="Enter your email"
+                          value={signinEmail}
+                          onChange={(e) => setSigninEmail(e.target.value)}
                           className={`
                             pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50
                             focus:bg-white/20 focus:border-ai-purple-400 transition-all duration-300
@@ -103,6 +142,8 @@ const Auth = () => {
                           id="signin-password"
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
+                          value={signinPassword}
+                          onChange={(e) => setSigninPassword(e.target.value)}
                           className={`
                             pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50
                             focus:bg-white/20 focus:border-ai-purple-400 transition-all duration-300
@@ -137,7 +178,7 @@ const Auth = () => {
                     <Button
                       type="button"
                       className="w-full bg-gradient-to-r from-ai-purple-500 to-ai-blue-500 hover:from-ai-purple-400 hover:to-ai-blue-400 text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:scale-105"
-                      onClick={() => navigate("/dashboard")}
+                      onClick={handleSignIn}
                     >
                       Sign In
                     </Button>
@@ -171,6 +212,8 @@ const Auth = () => {
                             id="firstname"
                             type="text"
                             placeholder="John"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
                             className={`
                               pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50
                               focus:bg-white/20 focus:border-ai-blue-400 transition-all duration-300
@@ -192,6 +235,8 @@ const Auth = () => {
                             id="lastname"
                             type="text"
                             placeholder="Doe"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
                             className={`
                               pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50
                               focus:bg-white/20 focus:border-ai-blue-400 transition-all duration-300
@@ -214,6 +259,8 @@ const Auth = () => {
                           id="signup-email"
                           type="email"
                           placeholder="john.doe@example.com"
+                          value={signUpEmail}
+                          onChange={(e) => setSignUpEmail(e.target.value)}
                           className={`
                             pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50
                             focus:bg-white/20 focus:border-ai-blue-400 transition-all duration-300
@@ -238,6 +285,8 @@ const Auth = () => {
                           id="signup-password"
                           type={showSignUpPassword ? "text" : "password"}
                           placeholder="Create a strong password"
+                          value={signUpPassword}
+                          onChange={(e) => setSignUpPassword(e.target.value)}
                           className={`
                             pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50
                             focus:bg-white/20 focus:border-ai-blue-400 transition-all duration-300
@@ -272,6 +321,8 @@ const Auth = () => {
                           id="phone"
                           type="tel"
                           placeholder="+1 (555) 123-4567"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
                           className={`
                             pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50
                             focus:bg-white/20 focus:border-ai-blue-400 transition-all duration-300
@@ -289,7 +340,7 @@ const Auth = () => {
                       </Label>
                       <div className="relative">
                         <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-4 h-4 z-10" />
-                        <Select>
+                        <Select onValueChange={(val) => setCountry(val)}>
                           <SelectTrigger className="pl-10 bg-white/10 border-white/20 text-white focus:bg-white/20 focus:border-ai-blue-400">
                             <SelectValue placeholder="Select your country" />
                           </SelectTrigger>
@@ -310,7 +361,7 @@ const Auth = () => {
                     <Button
                       type="button"
                       className="w-full bg-gradient-to-r from-ai-blue-500 to-ai-pink-500 hover:from-ai-blue-400 hover:to-ai-pink-400 text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:scale-105"
-                      onClick={() => navigate("/dashboard")}
+                      onClick={handleSignUp}
                     >
                       Create Account
                     </Button>
